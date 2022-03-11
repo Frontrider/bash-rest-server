@@ -5,17 +5,17 @@ send() {
  }
 
 DATE=$(date +"%a, %d %b %Y %H:%M:%S %Z")
-declare -a RESPONSE_HEADERS=(
+RESPONSE_HEADERS=(
 	"Date: $DATE"
 	"Expires: $DATE"
-	"Server: Bash REST Server"
+	"Server: Home Service"
 )
 
 add_response_header() {
 	RESPONSE_HEADERS+=("$1: $2")
 }
 
-declare -a HTTP_RESPONSE=(
+HTTP_RESPONSE=(
 	[200]="OK"
 	[400]="Bad Request"
 	[403]="Forbidden"
@@ -46,7 +46,17 @@ fail_with() {
 on_uri_match() {
 	local regex=$1
 	shift
-	[[ $REQUEST_URI =~ $regex ]] && "$@" "${BASH_REMATCH[@]}"
+	OLDIFS=$IFS
+	IFS=$'?'
+	#we split the URL by path and query
+	uri=($REQUEST_URI)
+	IFS=$OLDIFS
+	#echo ${uri[0]}
+	path=${uri[0]}
+	export REQUEST_PATH=${uri[0]}
+	export REQUEST_QUERY=${uri[1]}
+	[[ $path =~ $regex ]] && "$@" "${BASH_REMATCH[@]}"
+
 }
 
 processBody()
@@ -82,7 +92,8 @@ processHeaders()
 
 	[ "$REQUEST_METHOD" = "GET" ] || [ "$REQUEST_METHOD" = "POST" ] || fail_with 405
 
-	declare -a REQUEST_HEADERS
+	export REQUEST_METHOD=$REQUEST_METHOD
+	export REQUEST_URI="$REQUEST_URI"
 
 	while read -r header; do
 		header=${header%%$'\r'}
