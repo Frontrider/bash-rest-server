@@ -8,7 +8,7 @@ DATE=$(date +"%a, %d %b %Y %H:%M:%S %Z")
 RESPONSE_HEADERS=(
 	"Date: $DATE"
 	"Expires: $DATE"
-	"Server: Home Service"
+	"Server: Bash HTTP service"
 )
 
 add_response_header() {
